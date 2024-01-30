@@ -64,9 +64,57 @@ const images = [
     },
   ];
 
-const gallery = document.querySelector('.gallery');
-gallery.addEventListener('click', showPicture);
 
-function showPicture(e){
-    console.log(e);
+const gallery = document.querySelector('.gallery');
+
+function createImageItem(obj) {
+  const {preview, original, description} = obj;
+    return `<li class="gallery-item">
+  <a class="gallery-link" href="${original}">
+    <img
+      class="gallery-image"
+      src="${preview}"
+      data-source="${original}"
+      alt="${description}"
+    />
+  </a>
+</li>`;
 }
+
+function createGalleryMarkup() {
+  const markup = images.map(createImageItem).join('');
+  gallery.insertAdjacentHTML('afterbegin', markup);
+}
+
+createGalleryMarkup();
+
+
+gallery.addEventListener('click', e => {
+  if (e.target.nodeName !== 'IMG') return;
+    e.preventDefault();
+
+    const instance = basicLightbox.create(`
+    <div class="modal" role="fullsize-img-review">
+        <img
+      class="fullSize"
+      src="${e.target.dataset.source}"
+      alt="${e.target.alt}"
+    />
+    </div>
+    `, {
+        onShow: instance => {
+            window.addEventListener('keydown', closeModal);
+        },
+
+        onClose: instance => {
+            window.removeEventListener('keydown', closeModal);
+        }
+    });
+    
+    function closeModal(e) {
+        if (e.code === 'Escape') instance.close();
+    }
+    
+    instance.show();
+
+})
